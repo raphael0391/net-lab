@@ -22,6 +22,8 @@ namespace TesteImposto
             dataGridViewPedidos.AutoGenerateColumns = true;                       
             dataGridViewPedidos.DataSource = GetTablePedidos();
             ResizeColumns();
+            comboBox1.SelectedIndex = 0;
+            comboBox2.SelectedIndex = 0;
         }
 
         private void ResizeColumns()
@@ -49,8 +51,9 @@ namespace TesteImposto
         private void buttonGerarNotaFiscal_Click(object sender, EventArgs e)
         {            
             NotaFiscalService service = new NotaFiscalService();
-            pedido.EstadoOrigem = txtEstadoOrigem.Text;
-            pedido.EstadoDestino = txtEstadoDestino.Text;
+            XMLService xmlService = new XMLService();
+            pedido.EstadoOrigem = comboBox1.GetItemText(this.comboBox1.SelectedItem);
+            pedido.EstadoDestino = comboBox2.GetItemText(this.comboBox2.SelectedItem);
             pedido.NomeCliente = textBoxNomeCliente.Text;
 
             DataTable table = (DataTable)dataGridViewPedidos.DataSource;
@@ -60,15 +63,33 @@ namespace TesteImposto
                 pedido.ItensDoPedido.Add(
                     new PedidoItem()
                     {
-                        Brinde = Convert.ToBoolean(row["Brinde"]),
+                        Brinde = Convert.ToBoolean(row["Brinde"]),                        
                         CodigoProduto =  row["Codigo do produto"].ToString(),
                         NomeProduto = row["Nome do produto"].ToString(),
                         ValorItemPedido = Convert.ToDouble(row["Valor"].ToString())            
                     });
             }
 
+            //xmlService.GerarXML(pedido);
             service.GerarNotaFiscal(pedido);
             MessageBox.Show("Operação efetuada com sucesso");
+
+            textBoxNomeCliente.Text = "";
+            comboBox1.SelectedIndex = 0;
+            comboBox2.SelectedIndex = 0;      
+            try
+            {                
+                table.Clear();
+                dataGridViewPedidos.DataSource = null;
+                dataGridViewPedidos.DataSource = GetTablePedidos();
+                ResizeColumns();
+            }
+            catch (DataException f)
+            {
+                // Process exception and return.
+                Console.WriteLine("Exception of type {0} occurred.",
+                    f.GetType());
+            }
         }
     }
 }
